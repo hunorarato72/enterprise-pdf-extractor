@@ -1,12 +1,14 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException, Request
 from app.services.pdf_parser import extract_text
 from app.services.ai_extractor import ai_extractor
 from app.schemas.extraction import ExtractionResponse
+from app.core.security import limiter
 
 router=APIRouter()
 
 @router.post("/extract", response_model=ExtractionResponse)
-async def extract_data_from_pdf(file:UploadFile = File(...)):
+@limiter.limit("5/minute")
+async def extract_data_from_pdf(request:Request, file:UploadFile = File(...)):
     if not file.filename or not file.filename.lower().endswith('.pdf'):
         raise HTTPException(status_code=400, detail="Invalid format. Only PDF files are accepted!")
     
