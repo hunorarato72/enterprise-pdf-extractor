@@ -24,6 +24,8 @@ The application is fully dockerized and deployed on the **DigitalOcean App Platf
 2. **Language-Agnostic Processing:** Capable of parsing and understanding financial, or corporate PDFs in any language.
 3. **Automated Translation Pipeline:** Automatically generates a comprehensive executive summary and a list of actionable insights translated into Hungarian, regardless of the source document's language.
 4. **Production-Ready Security:** Embedded IP-based rate limiting protects the service.
+5. **Robust Upload Validation:** Strict 10 MB file size limit and dual MIME-type + file extension verification on every upload.
+6. **Structured Logging:** Centralised logging configuration with consistent formatting across all modules.
 
 ## Local Development Setup
 
@@ -77,4 +79,3 @@ docker run -p 8000:8000 --env-file .env pdf-extractor
 - [ ] **Automated Testing Suite:** Implement full unit and integration test coverage using `pytest` and `httpx`, utilizing mock LLM responses.
 - [ ] **Native Multimodal PDF Processing:** Refactor the LLM pipeline to send the raw PDF file directly to Gemini's native document-processing engine (removing dependency on plain text extraction via `pypdf`).
 - [ ] **Dynamic Target Languages:** Support user-configurable target translation languages dynamically via API query parameters rather than hardcoded fields.
-- [ ] **Upload Size & Type Verification:** Add defensive validation to restrict uploaded files to a maximum size (e.g., 10MB) and strictly verify MIME-type headers.

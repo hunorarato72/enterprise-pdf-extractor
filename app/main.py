@@ -6,6 +6,10 @@ from app.core.security import limiter
 from slowapi import _rate_limit_exceeded_handler
 # pyrefly: ignore [missing-import]
 from slowapi.errors import RateLimitExceeded
+from app.core.logging_config import setup_logging
+
+# Setup logging configuration
+setup_logging()
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
