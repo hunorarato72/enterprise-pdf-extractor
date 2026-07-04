@@ -35,7 +35,7 @@ The application is fully dockerized and deployed on the **DigitalOcean App Platf
 
 ### 1. Clone the Repository
 ```bash
-git clone [https://github.com/hunorarato72/enterprise-pdf-extractor.git](https://github.com/hunorarato72/enterprise-pdf-extractor.git)
+git clone https://github.com/hunorarato72/enterprise-pdf-extractor.git
 cd enterprise-pdf-extractor
 ```
 
