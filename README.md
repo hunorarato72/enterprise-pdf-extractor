@@ -22,10 +22,23 @@ The application is fully dockerized and deployed on the **DigitalOcean App Platf
 
 1. **Strict Structured Output:** Enforces strict Pydantic schemas. This guarantees zero AI hallucinations regarding the JSON structure and ensures frontend compatibility.
 2. **Language-Agnostic Processing:** Capable of parsing and understanding financial, or corporate PDFs in any language.
-3. **Automated Translation Pipeline:** Automatically generates a comprehensive executive summary and a list of actionable insights translated into Hungarian, regardless of the source document's language.
+3. **Dynamic Translation Pipeline:** Automatically generates a comprehensive executive summary and a list of actionable insights translated into a target language of your choice (via the `target_language` API query parameter, defaulting to Hungarian), regardless of the source document's language.
 4. **Production-Ready Security:** Embedded IP-based rate limiting protects the service.
 5. **Robust Upload Validation:** Strict 10 MB file size limit and dual MIME-type + file extension verification on every upload.
 6. **Structured Logging:** Centralised logging configuration with consistent formatting across all modules.
+
+## API Usage Example
+
+To extract data from a PDF and translate the summary/action items to German:
+
+```http
+POST /api/v1/extract?target_language=German HTTP/1.1
+Content-Type: multipart/form-data
+
+file: [your-pdf-file.pdf]
+```
+
+If no `target_language` is specified, it defaults to `Hungarian` to ensure backward compatibility.
 
 ## Local Development Setup
 
@@ -35,7 +48,7 @@ The application is fully dockerized and deployed on the **DigitalOcean App Platf
 
 ### 1. Clone the Repository
 ```bash
-git clone [https://github.com/hunorarato72/enterprise-pdf-extractor.git](https://github.com/hunorarato72/enterprise-pdf-extractor.git)
+git clone https://github.com/hunorarato72/enterprise-pdf-extractor.git
 cd enterprise-pdf-extractor
 ```
 
@@ -74,8 +87,8 @@ docker build -t pdf-extractor .
 docker run -p 8000:8000 --env-file .env pdf-extractor
 ```
 
-## Future Roadmap (v2.0)
+## Future Roadmap
 
 - [ ] **Automated Testing Suite:** Implement full unit and integration test coverage using `pytest` and `httpx`, utilizing mock LLM responses.
 - [ ] **Native Multimodal PDF Processing:** Refactor the LLM pipeline to send the raw PDF file directly to Gemini's native document-processing engine (removing dependency on plain text extraction via `pypdf`).
-- [ ] **Dynamic Target Languages:** Support user-configurable target translation languages dynamically via API query parameters rather than hardcoded fields.
+
