@@ -15,10 +15,14 @@ class ExtractedData(BaseModel):
     important_numbers: list[KeyValuePair] = Field(description="Important figures, dates, or metrics in key-value pairs (e.g., {'revenue': '15%', 'deadline': '2024-12-31'}).")
 
 class TranslationPipeline(BaseModel):
-    hungarian_summary: str = Field(description="A comprehensive executive summary of the document, written strictly in Hungarian, regardless of the original text's language.")
-    hungarian_action_items: list[str] = Field(description="A list of actionable items or recommendations extracted from the text, written strictly in Hungarian.")
-    
+    summary: str = Field(
+        description="A comprehensive executive summary of the document, written strictly in the requested target language."
+    )
+    action_items: list[str] = Field(
+        description="A list of actionable items or recommendations extracted from the text, written strictly in the requested target language."
+    )
+
 class ExtractionResponse(BaseModel):
     document_metadata: DocumentMetadata
     extracted_data: ExtractedData
-    translation_pipeline: TranslationPipeline   
+    translation_pipeline: TranslationPipeline

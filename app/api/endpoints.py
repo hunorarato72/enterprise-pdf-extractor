@@ -1,5 +1,5 @@
 import logging
-from fastapi import APIRouter, UploadFile, File, HTTPException, Request, status
+from fastapi import APIRouter, UploadFile, File, HTTPException, Request, Query, status
 from app.services.pdf_parser import extract_text
 from app.services.ai_extractor import ai_extractor
 from app.schemas.extraction import ExtractionResponse
@@ -14,10 +14,27 @@ ALLOWED_MIME_TYPES = ["application/pdf"]
 
 @router.post("/extract", response_model=ExtractionResponse)
 @limiter.limit("5/minute")
-async def extract_data_from_pdf(request:Request, file:UploadFile = File(...)):
-
+async def extract_data_from_pdf(
+    request: Request,
+    file: UploadFile = File(...),
+    # A FastAPI automatikusan felismeri, hogy ez query param (nem path, nem File),
+    # ezért a URL-ből olvassa ki: ?target_language=German
+    # Query(...) lehetővé teszi a default érték és a leírás megadását.
+    # default="Hungarian": ha a kliens nem ad meg semmit, magyar marad → backward compatible.
+    target_language: str = Query(
+        default="Hungarian",
+        description=(
+            "The target language for the translation pipeline. "
+            "Use the English name of the language (e.g., 'German', 'French', 'English'). "
+            "Defaults to 'Hungarian'."
+        )
+    ),
+):
     filename = file.filename or ""
-    logger.info("Received extraction request for file: %s (Content-Type: %s)", filename, file.content_type)
+    logger.info(
+        "Received extraction request for file: %s (Content-Type: %s, Target Language: %s)",
+        filename, file.content_type, target_language
+    )
 
     if file.content_type not in ALLOWED_MIME_TYPES or not filename.lower().endswith('.pdf'):
         logger.warning(
@@ -50,8 +67,8 @@ async def extract_data_from_pdf(request:Request, file:UploadFile = File(...)):
         logger.info("Extracting text from PDF...")
         text = extract_text(bytes(file_bytes))
         
-        logger.info("Extracting structured metadata and translation using AI...")
-        response = await ai_extractor.extract(text)
+        logger.info("Extracting structured metadata and translation using AI (language: %s)...", target_language)
+        response = await ai_extractor.extract(text, target_language=target_language)
         
         logger.info("Extraction complete for file: %s", filename)
         return response
@@ -63,4 +80,4 @@ async def extract_data_from_pdf(request:Request, file:UploadFile = File(...)):
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error("Unexpected error during PDF processing for %s: %s", filename, str(e), exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Error during processing: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error during processing: {str(e)}")
