@@ -1,4 +1,3 @@
-# pyright: ignore [missing-import]
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 

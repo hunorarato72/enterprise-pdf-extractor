@@ -16,15 +16,6 @@ class AIExtractor:
         self.structured_llm = self.llm.with_structured_output(ExtractionResponse)
 
     async def extract(self, text: str, target_language: str) -> ExtractionResponse:
-        """
-        Kinyeri a strukturált adatokat és fordítást a dokumentumból.
-
-        target_language: A célnyelv neve angolul (pl. "German", "French", "Hungarian").
-          - Az API endpointból érkezik, egyetlen query paraméterként.
-          - Belefűzzük a promptba, így a Gemini tudja, milyen nyelven írja
-            a 'summary' és 'action_items' mezőket.
-          - Alapértelmezés: "Hungarian" (backward compatible).
-        """
         logger.info(
             "Sending document text to Gemini structured LLM (length: %d chars, language: %s)...",
             len(text), target_language

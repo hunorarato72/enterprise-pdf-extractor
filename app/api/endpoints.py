@@ -17,10 +17,6 @@ ALLOWED_MIME_TYPES = ["application/pdf"]
 async def extract_data_from_pdf(
     request: Request,
     file: UploadFile = File(...),
-    # A FastAPI automatikusan felismeri, hogy ez query param (nem path, nem File),
-    # ezért a URL-ből olvassa ki: ?target_language=German
-    # Query(...) lehetővé teszi a default érték és a leírás megadását.
-    # default="Hungarian": ha a kliens nem ad meg semmit, magyar marad → backward compatible.
     target_language: str = Query(
         default="Hungarian",
         description=(
