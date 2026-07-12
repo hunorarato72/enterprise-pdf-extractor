@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from fastapi import APIRouter, UploadFile, File, HTTPException, Request, Query, status
 from app.services.pdf_parser import extract_text
@@ -13,7 +14,7 @@ MAX_FILE_SIZE=10*1024*1024
 ALLOWED_MIME_TYPES = ["application/pdf"]
 
 @router.post("/extract", response_model=ExtractionResponse)
-@limiter.limit("5/minute")
+@limiter.limit("5/minute")  # type: ignore
 async def extract_data_from_pdf(
     request: Request,
     file: UploadFile = File(...),
@@ -50,24 +51,27 @@ async def extract_data_from_pdf(
         )
 
     try:
-        file_bytes = bytearray()
-        while chunk := await file.read(1024 * 1024):
-            file_bytes.extend(chunk)
-            if len(file_bytes) > MAX_FILE_SIZE:
-                logger.warning("Rejected upload: Streamed size exceeds limit during read.")
-                raise HTTPException(
-                    status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-                    detail="File size exceeds the 10 MB limit."
-                )
-        
-        logger.info("Extracting text from PDF...")
-        text = extract_text(bytes(file_bytes))
-        
-        logger.info("Extracting structured metadata and translation using AI (language: %s)...", target_language)
-        response = await ai_extractor.extract(text, target_language=target_language)
-        
-        logger.info("Extraction complete for file: %s", filename)
-        return response
+        try:
+            file_bytes = bytearray()
+            while chunk := await file.read(1024 * 1024):
+                file_bytes.extend(chunk)
+                if len(file_bytes) > MAX_FILE_SIZE:
+                    logger.warning("Rejected upload: Streamed size exceeds limit during read.")
+                    raise HTTPException(
+                        status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                        detail="File size exceeds the 10 MB limit."
+                    )
+            
+            logger.info("Extracting text from PDF...")
+            text = await asyncio.to_thread(extract_text, bytes(file_bytes))
+            
+            logger.info("Extracting structured metadata and translation using AI (language: %s)...", target_language)
+            response = await ai_extractor.extract(text, target_language=target_language)
+            
+            logger.info("Extraction complete for file: %s", filename)
+            return response
+        finally:
+            await file.close()
     
     except HTTPException:
         raise
