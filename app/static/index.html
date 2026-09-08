@@ -1,102 +1,165 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PDF Data Extractor</title>
-    <meta name="description" content="Upload a PDF and extract structured data, key insights, and AI-powered translations using Google Gemini." />
+    <title>Enterprise Multi-Agent Document Intelligence</title>
+    <meta name="description"
+        content="LangGraph-powered Multi-Agent document extraction: Router, TRL Research Specialist, and Business Proposal Evaluator." />
     <link rel="stylesheet" href="/static/style.css" />
 </head>
+
 <body>
 
     <header>
-        <h1>PDF Data Extractor</h1>
-        <p>Upload a document to extract structured data and AI-powered insights.</p>
+        <div class="agent-badge-top">LANGGRAPH MULTI-AGENT PIPELINE</div>
+        <h1>PDF Data Extractor &bull; Multi-Agent Intelligence</h1>
+        <p>Dynamic routing: Autonomous agents specialized in Tech-Transfer, TRL evaluation, and Commercial feasibility.
+        </p>
     </header>
 
     <div class="container">
 
         <div id="drop-zone">
             <input type="file" id="file-input" accept="application/pdf" />
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m6.75 12-3-3m0 0-3 3m3-3v6m-1.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m6.75 12-3-3m0 0-3 3m3-3v6m-1.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
             </svg>
             <p><span class="highlight">Click to upload</span> or drag and drop a PDF here</p>
-            <p style="font-size: 0.78rem; margin-top: 4px;">Max file size: 10 MB</p>
+            <p style="font-size: 0.78rem; margin-top: 4px;">Supports Research Papers, Business Proposals & Enterprise
+                Docs (Max 10 MB)</p>
             <div id="file-name"></div>
         </div>
 
         <div class="controls">
-            <select id="lang-select" title="Target language for translation">
+            <select id="lang-select" title="Target language for translation and executive synthesis">
                 <option value="Hungarian">🇭🇺 Hungarian</option>
                 <option value="English">🇬🇧 English</option>
                 <option value="German">🇩🇪 German</option>
                 <option value="French">🇫🇷 French</option>
                 <option value="Spanish">🇪🇸 Spanish</option>
                 <option value="Italian">🇮🇹 Italian</option>
-                <option value="Romanian">🇷🇴 Romanian</option>
-                <option value="Polish">🇵🇱 Polish</option>
-                <option value="Czech">🇨🇿 Czech</option>
-                <option value="Slovak">🇸🇰 Slovak</option>
             </select>
 
-            <button id="extract-btn" disabled>Extract</button>
+            <button id="extract-btn" disabled>Dispatch Agents</button>
         </div>
 
         <p id="status"></p>
 
         <div id="results">
 
+            <div class="card agent-status-card">
+                <div class="agent-status-header">
+                    <div>
+                        <div class="section-label" style="margin-bottom: 2px;">Active Agent</div>
+                        <div class="dispatched-agent-title" id="dispatched-agent-title">—</div>
+                    </div>
+                    <div class="confidence-badge" id="classification-badge">—</div>
+                </div>
+                <div class="router-rationale" id="router-rationale"></div>
+            </div>
+
+            <div class="card specialist-card" id="research-card" style="display: none;">
+                <div class="section-label">Research &amp; Tech-Transfer Assessment</div>
+                <div class="trl-banner">
+                    <div class="trl-score" id="trl-level-badge">TRL —</div>
+                    <div class="trl-desc" id="trl-justification">—</div>
+                </div>
+                <div class="sub-section">
+                    <div class="sub-title">Scientific Novelty</div>
+                    <p id="research-novelty" class="text-body">—</p>
+                </div>
+                <div class="sub-section">
+                    <div class="sub-title">Commercial &amp; Industrial Use Cases</div>
+                    <div id="commercial-use-cases" class="tag-container"></div>
+                </div>
+                <div class="sub-section">
+                    <div class="sub-title">Development Gaps &amp; Pre-Market Milestones</div>
+                    <ul id="development-gaps" class="custom-list"></ul>
+                </div>
+            </div>
+
+            <div class="card specialist-card" id="business-card" style="display: none;">
+                <div class="section-label">Commercial Feasibility &amp; Risk Matrix</div>
+                <div class="meta-grid" style="margin-bottom: 16px;">
+                    <div class="meta-item">
+                        <div class="label">Feasibility Score</div>
+                        <div class="value" id="biz-feasibility">—</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="label">Project Budget</div>
+                        <div class="value" id="biz-budget">—</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="label">ROI Forecast</div>
+                        <div class="value" id="biz-roi">—</div>
+                    </div>
+                </div>
+                <div class="sub-section">
+                    <div class="sub-title">Executive Recommendation</div>
+                    <div class="recommendation-badge" id="biz-recommendation">—</div>
+                </div>
+                <div class="sub-section">
+                    <div class="sub-title">Risk Assessment</div>
+                    <table class="data-table" id="biz-risk-table">
+                        <tbody id="biz-risk-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+
             <div class="card">
-                <div class="section-label">Document Info</div>
+                <div class="section-label">Document Overview</div>
                 <div class="meta-grid">
                     <div class="meta-item">
                         <div class="label">Title</div>
                         <div class="value" id="meta-title">—</div>
                     </div>
                     <div class="meta-item">
-                        <div class="label">Type</div>
+                        <div class="label">Document Category</div>
                         <div class="value" id="meta-type">—</div>
                     </div>
                     <div class="meta-item">
-                        <div class="label">Original language</div>
+                        <div class="label">Original Language</div>
                         <div class="value" id="meta-lang">—</div>
                     </div>
                 </div>
             </div>
 
             <div class="card">
-                <div class="section-label">Summary</div>
-                <p id="summary-text"></p>
+                <div class="section-label">Executive Brief (Synthesis)</div>
+                <p id="summary-text" class="text-body"></p>
             </div>
 
             <div class="card">
                 <div class="section-label">Action Items</div>
-                <ul id="action-list"></ul>
+                <ul id="action-list" class="custom-list"></ul>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-
+            <div class="grid-2-col">
                 <div class="card">
                     <div class="section-label">Key Entities</div>
-                    <div id="entities-list"></div>
+                    <div id="entities-list" class="tag-container"></div>
                 </div>
 
                 <div class="card">
-                    <div class="section-label">Important Numbers</div>
-                    <table id="numbers-table">
+                    <div class="section-label">Important Numbers &amp; Metrics</div>
+                    <table class="data-table" id="numbers-table">
                         <tbody id="numbers-tbody"></tbody>
                     </table>
                 </div>
-
             </div>
 
             <div class="card json-card">
                 <div class="json-card-header">
-                    <div class="section-label" style="margin-bottom:0">Raw JSON Response</div>
+                    <div class="section-label" style="margin-bottom:0">Multi-Agent Structured Output (JSON)</div>
                     <button id="download-btn" title="Download as .json file">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24"
+                            stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
                         </svg>
                         Download JSON
                     </button>
@@ -109,9 +172,11 @@
     </div>
 
     <footer>
-        Powered by <a href="/docs" target="_blank">FastAPI</a> &amp; Google Gemini 2.5 Flash
+        Orchestrated by <strong>LangGraph</strong> &bull; Powered by <strong>Google Gemini 2.5 Flash</strong> &bull;
+        FastAPI Backend
     </footer>
 
     <script src="/static/script.js"></script>
 </body>
+
 </html>

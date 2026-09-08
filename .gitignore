@@ -9,3 +9,9 @@ env/
 
 # Environment variables
 .env
+
+# Local test docs and scratch scripts
+sample_docs/
+create_sample_pdfs.py
+test_live_extraction.py
+

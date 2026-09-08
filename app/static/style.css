@@ -423,3 +423,163 @@ footer a:hover {
         width: 100%;
     }
 }
+
+/* ==========================================================================
+   Multi-Agent Specialized UI Components
+   ========================================================================== */
+.agent-badge-top {
+    display: inline-block;
+    background: linear-gradient(135deg, rgba(124, 111, 254, 0.2), rgba(56, 189, 248, 0.2));
+    color: #93c5fd;
+    border: 1px solid rgba(124, 111, 254, 0.4);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    margin-bottom: 12px;
+}
+
+.agent-status-card {
+    background: linear-gradient(180deg, rgba(26, 26, 40, 0.95), rgba(19, 19, 30, 0.95));
+    border-left: 4px solid var(--accent);
+}
+
+.agent-status-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.dispatched-agent-title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #fff;
+    margin-top: 2px;
+}
+
+.confidence-badge {
+    background: var(--accent-dim);
+    color: #a5b4fc;
+    border: 1px solid var(--accent);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.router-rationale {
+    margin-top: 10px;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+    font-style: italic;
+}
+
+.specialist-card {
+    border-color: rgba(124, 111, 254, 0.4);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.trl-banner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: rgba(56, 189, 248, 0.1);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+}
+
+.trl-score {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.15);
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    white-space: nowrap;
+}
+
+.trl-desc {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: #bae6fd;
+}
+
+.sub-section {
+    margin-top: 16px;
+}
+
+.sub-title {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.text-body {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #cbd5e1;
+}
+
+.custom-list {
+    margin-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.88rem;
+    color: #cbd5e1;
+}
+
+.recommendation-badge {
+    display: inline-block;
+    background: rgba(74, 222, 128, 0.12);
+    color: #4ade80;
+    border: 1px solid rgba(74, 222, 128, 0.3);
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.grid-2-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.data-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+}
+
+.data-table td:first-child {
+    color: var(--text-muted);
+    width: 40%;
+}
+
+@media (max-width: 600px) {
+    .grid-2-col {
+        grid-template-columns: 1fr;
+    }
+
+    .trl-banner {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

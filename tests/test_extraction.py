@@ -1,50 +1,41 @@
-import io
 import pytest
-from app.schemas.extraction import ExtractionResponse, DocumentMetadata, ExtractedData, TranslationPipeline
+from app.schemas.extraction import (
+    ExtractionResponse,
+    DocumentMetadata,
+    ExtractedData,
+    TranslationPipeline,
+    ClassificationResult,
+    ResearchAnalysis,
+    BusinessAnalysis,
+    KeyValuePair
+)
 
 # TEST 1: Reject invalid file formats
 def test_extract_invalid_format(client):
-    """
-    Verify that the server correctly returns a 415 HTTP status code
-    when attempting to upload a non-PDF file.
-    """
-    # Create in-memory file data simulating a text file
     file_data = {"file": ("test.txt", b"This is not a PDF", "text/plain")}
-    
     response = client.post("/api/v1/extract", files=file_data)
-    
-    # Assertions: check the HTTP status code and error details
     assert response.status_code == 415
     assert "Invalid format" in response.json()["detail"]
 
 
 # TEST 2: Reject files that exceed the size limit
 def test_extract_file_too_large(client):
-    """
-    Verify that files larger than the 10 MB limit are rejected
-    with a 413 HTTP status code.
-    """
-    # Generate an 11 MB dummy byte stream (11 * 1024 * 1024 bytes)
     large_data = b"0" * (11 * 1024 * 1024)
     file_data = {"file": ("large.pdf", large_data, "application/pdf")}
-    
     response = client.post("/api/v1/extract", files=file_data)
-    
-    # Assertions: expect 413 Payload Too Large
     assert response.status_code == 413
     assert "exceeds" in response.json()["detail"]
 
 
-# TEST 3: Mock successful data extraction and translation
+# TEST 3: Mock successful data extraction and translation (General Specialist)
 def test_extract_success(client, monkeypatch):
-    """
-    Test the successful extraction process.
-    The Gemini LLM call (ai_extractor.extract) is mocked to avoid
-    calling the actual external API, returning a predefined response instead.
-    """
-    
-    # Prepare the mocked response we expect the Gemini model to return
     expected_response = ExtractionResponse(
+        dispatched_agent="📄 General Enterprise Document Specialist",
+        classification=ClassificationResult(
+            doc_type="general",
+            confidence=0.98,
+            rationale="Invoice format detected."
+        ),
         document_metadata=DocumentMetadata(
             title="Test Invoice",
             detected_language="English",
@@ -60,57 +51,130 @@ def test_extract_success(client, monkeypatch):
         )
     )
 
-    # Define an asynchronous mock function to replace the extract method
     async def mock_extract(text: str, target_language: str):
-        # Verify that the endpoint forwarded the requested target language
         assert target_language == "German"
         return expected_response
 
-    # Mock the extract_text function to return a dummy string,
-    # bypassing pypdf parsing of the invalid test bytes
     monkeypatch.setattr("app.api.endpoints.extract_text", lambda bytes_data: "Mocked PDF text content")
-
-    # Use monkeypatch to temporarily replace the real extraction method with our mock function
     monkeypatch.setattr("app.api.endpoints.ai_extractor.extract", mock_extract)
 
-    # Simulate a minimal PDF file payload (dummy content is now fine because pypdf is mocked)
     pdf_data = {"file": ("invoice.pdf", b"dummy pdf bytes", "application/pdf")}
-    
-    # Send request with target_language query parameter set to German
     response = client.post("/api/v1/extract?target_language=German", files=pdf_data)
     
-    # Assertions: check status code and verify JSON contents match our expectations
     assert response.status_code == 200
-    
     data = response.json()
+    assert data["dispatched_agent"] == "📄 General Enterprise Document Specialist"
+    assert data["classification"]["doc_type"] == "general"
     assert data["document_metadata"]["title"] == "Test Invoice"
-    assert data["document_metadata"]["detected_language"] == "English"
     assert data["translation_pipeline"]["summary"] == "This is a mocked summary in German."
 
 
-# TEST 4: Verify that the root path correctly serves the HTML interface
+# TEST 4: Mock Research & Innovation Specialist (TRL Evaluation)
+def test_extract_research_specialist(client, monkeypatch):
+    expected_response = ExtractionResponse(
+        dispatched_agent="🔬 Research & Innovation Specialist (TRL & Tech-Transfer)",
+        classification=ClassificationResult(
+            doc_type="research",
+            confidence=0.96,
+            rationale="Academic methodology and lab validation identified."
+        ),
+        document_metadata=DocumentMetadata(
+            title="Perovskite Solar Cells Breakthrough",
+            detected_language="English",
+            document_type="Scientific Research Paper"
+        ),
+        research_analysis=ResearchAnalysis(
+            trl_level=4,
+            trl_justification="Small scale lab prototypes demonstrated 24% photon efficiency.",
+            scientific_novelty="Novel double-cation passivation layer.",
+            commercial_use_cases=["Building-integrated photovoltaics (BIPV)", "Aerospace solar arrays"],
+            development_gaps=["Long-term thermal stability test under 85°C"]
+        ),
+        extracted_data=ExtractedData(
+            key_entities=["National Energy Research Institute", "Advanced Materials Lab"],
+            important_numbers=[KeyValuePair(key="Efficiency", value="24.2%")]
+        ),
+        translation_pipeline=TranslationPipeline(
+            summary="Úttörő perovskite napelem kutatás.",
+            action_items=["Szabadalmi bejelentés előkészítése"]
+        )
+    )
+
+    async def mock_extract(text: str, target_language: str):
+        return expected_response
+
+    monkeypatch.setattr("app.api.endpoints.extract_text", lambda bytes_data: "Perovskite research text")
+    monkeypatch.setattr("app.api.endpoints.ai_extractor.extract", mock_extract)
+
+    pdf_data = {"file": ("research_paper.pdf", b"dummy bytes", "application/pdf")}
+    response = client.post("/api/v1/extract?target_language=Hungarian", files=pdf_data)
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["classification"]["doc_type"] == "research"
+    assert data["research_analysis"]["trl_level"] == 4
+    assert "Building-integrated photovoltaics (BIPV)" in data["research_analysis"]["commercial_use_cases"]
+
+
+# TEST 5: Mock Business Proposal Specialist (Feasibility & Risk Matrix)
+def test_extract_business_proposal(client, monkeypatch):
+    expected_response = ExtractionResponse(
+        dispatched_agent="💼 Business Proposal & Commercial Feasibility Specialist",
+        classification=ClassificationResult(
+            doc_type="business_proposal",
+            confidence=0.92,
+            rationale="Contains commercial milestones and budget request."
+        ),
+        document_metadata=DocumentMetadata(
+            title="Smart Grid Expansion Grant",
+            detected_language="English",
+            document_type="Grant Application"
+        ),
+        business_analysis=BusinessAnalysis(
+            project_budget="250,000 EUR",
+            roi_forecast="Estimated 3.5x ROI in 36 months",
+            feasibility_score=8,
+            risk_assessment=[
+                KeyValuePair(key="Financial Risk", value="Low - 50% co-financing secured"),
+                KeyValuePair(key="Execution Risk", value="Medium - Tight regulatory approvals")
+            ],
+            recommendation="Approved for Tech-Transfer Screening"
+        ),
+        extracted_data=ExtractedData(key_entities=["TechCo Ltd."], important_numbers=[]),
+        translation_pipeline=TranslationPipeline(summary="Üzleti terv.", action_items=["Támogatás jóváhagyása"])
+    )
+
+    async def mock_extract(text: str, target_language: str):
+        return expected_response
+
+    monkeypatch.setattr("app.api.endpoints.extract_text", lambda bytes_data: "Grant proposal text")
+    monkeypatch.setattr("app.api.endpoints.ai_extractor.extract", mock_extract)
+
+    pdf_data = {"file": ("proposal.pdf", b"dummy bytes", "application/pdf")}
+    response = client.post("/api/v1/extract?target_language=Hungarian", files=pdf_data)
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["classification"]["doc_type"] == "business_proposal"
+    assert data["business_analysis"]["feasibility_score"] == 8
+    assert data["business_analysis"]["project_budget"] == "250,000 EUR"
+
+
+# TEST 6: Verify root serves UI
 def test_read_root(client):
-    """
-    Verify that a GET request to the root path serves the HTML user interface
-    with the correct content type.
-    """
     response = client.get("/")
     assert response.status_code == 200
     assert "text/html" in response.headers["content-type"]
     assert "PDF Data Extractor" in response.text
 
 
-# TEST 5: Verify that rate limiting blocks excessive requests
+# TEST 7: Verify rate limiting
 def test_rate_limit(client, monkeypatch):
-    """
-    Verify that sending more than 5 requests per minute triggers
-    a 429 Too Many Requests HTTP status code.
-    """
-    # Mock the parser and AI extractor to return dummy data quickly
     monkeypatch.setattr("app.api.endpoints.extract_text", lambda bytes_data: "Dummy text")
     
     async def mock_extract(text: str, target_language: str):
         return ExtractionResponse(
+            classification=ClassificationResult(doc_type="general", confidence=1.0, rationale="Mock"),
             document_metadata=DocumentMetadata(title="T", detected_language="E", document_type="R"),
             extracted_data=ExtractedData(key_entities=[], important_numbers=[]),
             translation_pipeline=TranslationPipeline(summary="S", action_items=[])
@@ -119,8 +183,6 @@ def test_rate_limit(client, monkeypatch):
 
     pdf_data = {"file": ("test.pdf", b"dummy bytes", "application/pdf")}
 
-    # Send requests in a loop until we hit the rate limit (429)
-    # We use a loop of 10 to guarantee hitting the limit of 5, regardless of previous tests' requests
     rate_limited = False
     for _ in range(10):
         response = client.post("/api/v1/extract", files=pdf_data)
@@ -129,6 +191,4 @@ def test_rate_limit(client, monkeypatch):
             break
         assert response.status_code == 200
 
-    # Verify that we were indeed blocked by the rate limiter eventually
     assert rate_limited is True
-

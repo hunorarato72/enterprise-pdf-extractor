@@ -3,3 +3,6 @@ venv
 __pycache__
 .git
 .env
+sample_docs
+create_sample_pdfs.py
+test_live_extraction.py
