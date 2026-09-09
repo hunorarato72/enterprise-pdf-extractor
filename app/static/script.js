@@ -63,8 +63,8 @@ const i18n = {
         badgeAgent: 'Specialista Ágens',
         badgeBaseline: 'Alapszintű feldolgozás',
         guideResearch: '<strong>Tudományos & K+F cikkek:</strong> TRL szint kalkuláció (1–9), technológia-transzfer potenciál és piaci akadályok felmérése.',
-        guideBiz: '<strong>Kereskedelmi üzleti tervek & befektetési ajánlatok:</strong> Megvalósíthatósági pontszám (1–10), ROI becslés és kockázati mátrix.',
-        guideGeneral: '<strong>Minden egyéb dokumentum (ösztöndíjak, szabályzatok, számlák, szerződések):</strong> Nem igényel specialista ágenst — standard adatkivonatolási és összefoglaló pipeline fut le.'
+        guideBiz: '<strong>Kereskedelmi ajánlatok & üzleti tervek:</strong> Megvalósíthatósági pontszám (1–10), ROI becslés és kockázati mátrix.',
+        guideGeneral: '<strong>Minden egyéb intézményi és vállalati dokumentum:</strong> Nem igényel specialista ágenst — standard strukturált adatkivonatolási és összefoglaló pipeline fut le.'
     },
     'English': {
         btn: 'Extract & Analyze',
@@ -75,8 +75,8 @@ const i18n = {
         badgeAgent: 'Specialist Agent',
         badgeBaseline: 'Baseline Pipeline',
         guideResearch: '<strong>Scientific & R&D Papers:</strong> Technology Readiness Level (TRL 1–9), tech-transfer potential, and validation gaps.',
-        guideBiz: '<strong>Commercial Business Plans & Investment Proposals:</strong> Feasibility score (1–10), ROI forecast, and risk matrix.',
-        guideGeneral: '<strong>All other documents (scholarships, invoices, contracts, memos):</strong> No specialist agent required — standard structured entity extraction and executive summary.'
+        guideBiz: '<strong>Commercial Proposals & Business Plans:</strong> Feasibility score (1–10), ROI forecast, and risk matrix.',
+        guideGeneral: '<strong>All other corporate and institutional documents:</strong> No specialist agent required — standard structured entity extraction and executive summary.'
     },
     'German': {
         btn: 'Dokument analysieren',
@@ -87,8 +87,8 @@ const i18n = {
         badgeAgent: 'Spezialist-Agent',
         badgeBaseline: 'Standardverarbeitung',
         guideResearch: '<strong>Wissenschaftliche & F&E-Dokumente:</strong> TRL-Berechnung (1–9), Technologietransfer-Potenzial und Marktlücken.',
-        guideBiz: '<strong>Kommerzielle Geschäftspläne & Investitionsanträge:</strong> Machbarkeitsbewertung (1–10), ROI-Prognose und Risikomatrix.',
-        guideGeneral: '<strong>Alle anderen Dokumente (Stipendien, Rechnungen, Verträge, Notizen):</strong> Kein Spezialist-Agent erforderlich — standardmäßige Datenextraktion.'
+        guideBiz: '<strong>Kommerzielle Angebote & Geschäftspläne:</strong> Machbarkeitsbewertung (1–10), ROI-Prognose und Risikomatrix.',
+        guideGeneral: '<strong>Alle anderen institutionellen und geschäftlichen Dokumente:</strong> Kein Spezialist-Agent erforderlich — standardmäßige Datenextraktion.'
     },
     'French': {
         btn: 'Analyser le document',
@@ -99,8 +99,8 @@ const i18n = {
         badgeAgent: 'Agent Spécialiste',
         badgeBaseline: 'Traitement Standard',
         guideResearch: '<strong>Articles scientifiques & R&D :</strong> Évaluation TRL (1–9), potentiel de transfert de technologie et obstacles marché.',
-        guideBiz: '<strong>Plans d\'affaires commerciaux & investissements :</strong> Score de faisabilité (1–10), prévision du ROI et matrice des risques.',
-        guideGeneral: '<strong>Tous les autres documents (bourses, factures, contrats, mémos) :</strong> Aucun agent spécialiste requis — extraction et synthèse standard.'
+        guideBiz: '<strong>Propositions commerciales & plans d\'affaires :</strong> Score de faisabilité (1–10), prévision du ROI et matrice des risques.',
+        guideGeneral: '<strong>Tous les autres documents institutionnels et d\'entreprise :</strong> Aucun agent spécialiste requis — extraction et synthèse standard.'
     },
     'Spanish': {
         btn: 'Analizar documento',
@@ -111,8 +111,8 @@ const i18n = {
         badgeAgent: 'Agente Especialista',
         badgeBaseline: 'Procesamiento estándar',
         guideResearch: '<strong>Artículos científicos e I+D:</strong> Nivel TRL (1–9), potencial de transferencia tecnológica y barreras de mercado.',
-        guideBiz: '<strong>Planes de negocio comerciales e inversiones:</strong> Puntuación de viabilidad (1–10), estimación de ROI y matriz de riesgos.',
-        guideGeneral: '<strong>Todos los demás documentos (becas, facturas, contratos, notas):</strong> No requiere agente especialista — extracción de datos estándar.'
+        guideBiz: '<strong>Propuestas comerciales y planes de negocio:</strong> Puntuación de viabilidad (1–10), estimación de ROI y matriz de riesgos.',
+        guideGeneral: '<strong>Todos los demás documentos institucionales y empresariales:</strong> No requiere agente especialista — extracción de datos estándar.'
     },
     'Italian': {
         btn: 'Analizza documento',
@@ -123,8 +123,8 @@ const i18n = {
         badgeAgent: 'Agente Specialista',
         badgeBaseline: 'Elaborazione standard',
         guideResearch: '<strong>Articoli scientifici e R&S:</strong> Livello TRL (1–9), potenziale di trasferimento tecnologico e barriere di mercato.',
-        guideBiz: '<strong>Piani aziendali commerciali e investimenti:</strong> Punteggio di fattibilità (1–10), previsione del ROI e matrice dei rischi.',
-        guideGeneral: '<strong>Tutti gli altri documenti (borse di studio, fatture, contratti, note):</strong> Nessun agente specialista richiesto — estrazione e sintesi standard.'
+        guideBiz: '<strong>Proposte commerciali e piani aziendali:</strong> Punteggio di fattibilità (1–10), previsione del ROI e matrice dei rischi.',
+        guideGeneral: '<strong>Tutti gli altri documenti istituzionali e aziendali:</strong> Nessun agente specialista richiesto — estrazione e sintesi standard.'
     }
 };
 

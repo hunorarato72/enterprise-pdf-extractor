@@ -99,14 +99,11 @@ class DocumentAgentWorkflow:
         text_sample = state["document_text"][:2500]
 
         prompt = (
-            "You are an expert Document Classification and Routing Agent in an Enterprise Document Pipeline. "
-            "Analyze the following document and classify it strictly into one of three categories:\n\n"
-            "1. 'research' -> Strictly for scientific journal articles, peer-reviewed academic papers, technological breakthrough publications, lab experiment reports, or patents.\n"
-            "2. 'business_proposal' -> Strictly for commercial business plans, enterprise pitch decks, venture capital fundraising proposals, for-profit commercial investment plans, or corporate sales proposals with financial ROI and market feasibility projections.\n"
-            "   CRITICAL EXCLUSIONS FOR 'business_proposal':\n"
-            "   - Academic, educational, or sports scholarships (pl. sportösztöndíj, tanulmányi ösztöndíj, sporttámogatási pályázat, diákpályázat, egyetemi/egyesületi kiírások) are NOT commercial business proposals! They must strictly be classified as 'general'.\n"
-            "   - Institutional grant calls for students/athletes, fellowship notices, non-profit or municipal grants, and administrative application forms must be classified as 'general'.\n"
-            "3. 'general' -> All other documents: scholarships and fellowship notices (sportösztöndíj, tanulmányi pályázatok, diák- és sporttámogatások), university regulations, application forms, invoices, receipts, purchase orders, standard legal contracts, employment agreements, HR policies, resumes, or generic corporate memos.\n\n"
+            "You are an expert Document Classification and Routing Agent in an Enterprise Document Pipeline.\n"
+            "Analyze the following document and classify it strictly into one of three categories based on its primary function and intent:\n\n"
+            "1. 'research' -> Academic and scientific publications: peer-reviewed research papers, conference proceedings, patents, or technical lab reports detailing novel experimental methodologies, scientific findings, or technological discoveries.\n\n"
+            "2. 'business_proposal' -> Commercial for-profit business transactions and investment proposals: startup pitch decks, commercial tender bids, enterprise client sales proposals, venture capital investment memoranda, or business plans seeking commercial ROI and market expansion.\n\n"
+            "3. 'general' -> All other institutional, operational, administrative, and corporate documents: institutional announcements, public or academic calls, regulations, administrative guidelines, application forms, invoices, receipts, purchase orders, standard legal contracts, employment agreements, HR policies, or internal memos.\n\n"
             f"TARGET LANGUAGE REQUIREMENT:\n"
             f"Write the classification 'rationale' and 'document_type' strictly in {target_lang}.\n"
             "Also infer the document title, primary language, and high-level document type.\n\n"
