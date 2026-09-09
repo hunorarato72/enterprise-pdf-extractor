@@ -57,13 +57,32 @@ class StandardExtractorOutput(BaseModel):
 
 class DocumentAgentWorkflow:
     def __init__(self):
-        logger.info("Initializing DocumentAgentWorkflow with Gemini Flash...")
-        self.llm = ChatGoogleGenerativeAI(
+        logger.info("Initializing DocumentAgentWorkflow with resilient multi-tier Gemini pipeline...")
+        self.graph = self._build_graph()
+
+    def _get_structured_runner(self, schema):
+        primary = ChatGoogleGenerativeAI(
+            model="gemini-2.5-flash",
+            api_key=settings.GOOGLE_API_KEY,
+            temperature=0,
+            max_retries=3
+        ).with_structured_output(schema)
+
+        fallback_1 = ChatGoogleGenerativeAI(
             model="gemini-flash-latest",
             api_key=settings.GOOGLE_API_KEY,
-            temperature=0
-        )
-        self.graph = self._build_graph()
+            temperature=0,
+            max_retries=3
+        ).with_structured_output(schema)
+
+        fallback_2 = ChatGoogleGenerativeAI(
+            model="gemini-flash-lite-latest",
+            api_key=settings.GOOGLE_API_KEY,
+            temperature=0,
+            max_retries=3
+        ).with_structured_output(schema)
+
+        return primary.with_fallbacks([fallback_1, fallback_2])
 
     def _build_graph(self):
         workflow = StateGraph(AgentState)
@@ -111,8 +130,8 @@ class DocumentAgentWorkflow:
             f"Document Sample:\n{text_sample}"
         )
 
-        structured_router = self.llm.with_structured_output(ClassifierOutput)
-        result: ClassifierOutput = await structured_router.ainvoke(prompt)
+        runner = self._get_structured_runner(ClassifierOutput)
+        result: ClassifierOutput = await runner.ainvoke(prompt)
         logger.info(
             "Router classified as '%s' (Confidence: %.2f)",
             result.classification.doc_type, result.classification.confidence
@@ -159,8 +178,8 @@ class DocumentAgentWorkflow:
             f"Document Text:\n{state['document_text'][:MAX_DOCUMENT_CHARS]}"
         )
 
-        structured_agent = self.llm.with_structured_output(ResearchAgentOutput)
-        result: ResearchAgentOutput = await structured_agent.ainvoke(prompt)
+        runner = self._get_structured_runner(ResearchAgentOutput)
+        result: ResearchAgentOutput = await runner.ainvoke(prompt)
 
         return {
             "research_analysis": result.research_analysis,
@@ -194,8 +213,8 @@ class DocumentAgentWorkflow:
             f"Document Text:\n{state['document_text'][:MAX_DOCUMENT_CHARS]}"
         )
 
-        structured_agent = self.llm.with_structured_output(BusinessAgentOutput)
-        result: BusinessAgentOutput = await structured_agent.ainvoke(prompt)
+        runner = self._get_structured_runner(BusinessAgentOutput)
+        result: BusinessAgentOutput = await runner.ainvoke(prompt)
 
         return {
             "business_analysis": result.business_analysis,
@@ -220,8 +239,8 @@ class DocumentAgentWorkflow:
             f"Document Text:\n{state['document_text'][:MAX_DOCUMENT_CHARS]}"
         )
 
-        structured_agent = self.llm.with_structured_output(StandardExtractorOutput)
-        result: StandardExtractorOutput = await structured_agent.ainvoke(prompt)
+        runner = self._get_structured_runner(StandardExtractorOutput)
+        result: StandardExtractorOutput = await runner.ainvoke(prompt)
 
         return {
             "extracted_data": result.extracted_data,

@@ -86,6 +86,11 @@ async def extract_data_from_pdf(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
                 detail="Az AI szolgáltatás elérte a pillanatnyi kéréshatárt (Rate Limit / Quota). Kérjük, várj fél percet és próbáld újra!"
             )
+        if "503" in err_msg or "UNAVAILABLE" in err_msg or "high demand" in err_msg.lower():
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="A Google AI modellátjáró pillanatnyi csúcsforgalom miatt foglalt (503 High Demand). Kérjük, várj pár másodpercet és kattints újra az elemzésre!"
+            )
         raise HTTPException(
             status_code=500,
             detail=f"Hiba történt a dokumentum feldolgozása közben: {err_msg[:120]}"
