@@ -85,8 +85,8 @@ class TranslationPipeline(BaseModel):
 
 class ExtractionResponse(BaseModel):
     dispatched_agent: str = Field(
-        default="General Document Specialist",
-        description="The name of the specialized AI agent that analyzed this document."
+        default="📄 Standard Extractor (No Specialist Agent)",
+        description="The name of the specialized AI agent or baseline pipeline that processed this document."
     )
     classification: ClassificationResult = Field(
         default_factory=lambda: ClassificationResult(

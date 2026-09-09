@@ -1,32 +1,32 @@
-# Enterprise Multi-Agent Document Intelligence (LangGraph Pipeline)
+# Enterprise Document Intelligence & Extraction Pipeline
 
-An asynchronous, production-ready microservice built with **FastAPI**, **LangGraph**, and **Docker** that orchestrates specialized AI agents to analyze, route, and extract structured intelligence from documents using **Google Gemini 2.5 Flash**.
+An asynchronous, production-ready microservice built with **FastAPI**, **LangGraph**, and **Docker** that classifies, routes, and extracts structured intelligence from documents using **Google Gemini 2.5 Flash**.
 
 ---
 
 ## Live Demo & API Docs
 
-The application is containerized with Docker and deployed on the **DigitalOcean App Platform**:
-* **[LIVE WEB UI & DEMO](https://enterprise-data-extractor-j6jzn.ondigitalocean.app/)**
-* **[LIVE SWAGGER UI DOCS](https://enterprise-data-extractor-j6jzn.ondigitalocean.app/docs)**
+The application is deployed on **[FastAPI Cloud](https://fastapicloud.com/)**:
+* **[LIVE WEB UI & DEMO](https://enterprise-pdf-extractor.fastapicloud.dev/)**
+* **[LIVE SWAGGER UI DOCS](https://enterprise-pdf-extractor.fastapicloud.dev/docs)**
 
-*(Protected with an in-memory rate limiter allowing 5 requests per minute per IP).*
+*(Protected with an in-memory rate limiter allowing 5 requests per minute per IP.)*
 
 ---
 
-## Multi-Agent Architecture (LangGraph StateGraph)
+## Architecture (LangGraph StateGraph)
 
-Rather than treating every document with a generic, single-prompt pipeline, this system uses an **Agentic Router & Specialist Dispatcher** pattern:
+Rather than treating every document with a generic single-pass prompt, this system uses an **Intelligent Routing & Domain Specialist** pattern:
 
 ```mermaid
 graph TD
-    A[Uploaded PDF] --> B[Router & Classification Agent]
+    A[Uploaded PDF] --> B[Router & Classification Node]
     
-    B -->|Type: research| C[🔬 Research & Innovation Specialist]
-    B -->|Type: business_proposal| D[💼 Business Proposal Specialist]
-    B -->|Type: general| E[📄 General Enterprise Specialist]
+    B -->|Type: research| C[🔬 Research & Tech-Transfer Specialist]
+    B -->|Type: business_proposal| D[💼 Commercial Feasibility Specialist]
+    B -->|Type: general| E[📄 Standard Document Extractor]
     
-    C --> F[Executive Synthesis & Translation Node]
+    C --> F[Structured JSON Output & Synthesis]
     D --> F
     E --> F
     
@@ -61,6 +61,7 @@ graph TD
 - **Frontend UI:** Vanilla HTML5, CSS3 (minimalist dark UI, agent timeline, responsive badges), JavaScript (Fetch API, drag-and-drop, one-click JSON export)
 - **Security & Rate Limiting:** slowapi (in-memory rate limiting)
 - **Containerization:** Docker (`python:3.11-slim`)
+- **Deployment:** [FastAPI Cloud](https://fastapicloud.com/) (zero-config, scale-to-zero)
 - **Testing:** Pytest & HTTPX (100% automated test coverage with mocked LLM agents)
 
 ---
@@ -118,7 +119,6 @@ cd enterprise-pdf-extractor
 
 Create a `.env` file in the root directory:
 ```env
-PROJECT_NAME="Enterprise Multi-Agent Document Intelligence"
 GOOGLE_API_KEY="your_actual_gemini_api_key_here"
 ```
 
@@ -140,16 +140,29 @@ uvicorn app.main:app --reload
 
 ### 3. Run Automated Tests
 ```bash
+pip install -r requirements-dev.txt
 python -m pytest
 ```
 
 ---
 
-## Docker Deployment
+## Deployment
 
-To build and run the container locally:
+### FastAPI Cloud (Production)
+
+```bash
+pip install "fastapi[standard]"
+fastapi deploy
+```
+
+Set your environment variables via the CLI:
+```bash
+fastapi cloud env set --secret GOOGLE_API_KEY "your_key_here"
+```
+
+### Docker (Local / Alternative)
 
 ```bash
 docker build -t multi-agent-extractor .
-docker run -p 8000:8000 --env-file .env multi-agent-extractor
+docker run -p 8000:8000 -e GOOGLE_API_KEY="your_key_here" multi-agent-extractor
 ```

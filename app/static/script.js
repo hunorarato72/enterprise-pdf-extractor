@@ -28,7 +28,7 @@ dropZone.addEventListener('dragleave', () => {
 
 dropZone.addEventListener('drop', (e) => {
     e.preventDefault();
-    dropZone.classList.add('drag-over');
+    dropZone.classList.remove('drag-over');
     const file = e.dataTransfer.files[0];
     handleFile(file);
 });
@@ -53,13 +53,31 @@ function handleFile(file) {
     resultsEl.classList.remove('visible');
 }
 
+langSelect.addEventListener('change', updateButtonLabel);
+
+function updateButtonLabel() {
+    const isHu = (langSelect.value === 'Hungarian');
+    extractBtn.textContent = isHu ? 'Dokumentum elemzése' : 'Extract & Analyze';
+    const downloadBtnEl = document.getElementById('download-btn');
+    if (downloadBtnEl) {
+        downloadBtnEl.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+            </svg>
+            ${isHu ? 'JSON letöltése' : 'Download JSON'}
+        `;
+    }
+}
+updateButtonLabel();
+
 extractBtn.addEventListener('click', async () => {
     if (!selectedFile) return;
 
     const lang = langSelect.value;
+    const isHu = (lang === 'Hungarian');
 
     extractBtn.disabled = true;
-    setStatus('<span class="loader"></span><strong>Multi-Agent Pipeline active:</strong> Routing document & executing specialist agent...');
+    setStatus(`<span class="loader"></span><strong>${isHu ? 'Feldolgozás folyamatban:' : 'Processing document:'}</strong> ${isHu ? 'Dokumentum besorolása és adatkivonatolás...' : 'Classifying document & extracting structured data...'}`);
     resultsEl.classList.remove('visible');
 
     const formData = new FormData();
@@ -81,7 +99,7 @@ extractBtn.addEventListener('click', async () => {
         setStatus('');
 
     } catch (err) {
-        setStatus(err.message || 'An unexpected error occurred.', true);
+        setStatus(err.message || (isHu ? 'Váratlan hiba történt.' : 'An unexpected error occurred.'), true);
     } finally {
         extractBtn.disabled = false;
     }
@@ -100,12 +118,21 @@ function renderResults(data, lang) {
         translation_pipeline: translation
     } = data;
 
-    document.getElementById('dispatched-agent-title').textContent = dispatched_agent || 'General Document Specialist';
+    const isHungarian = (lang === 'Hungarian');
+
+    const routeLabelEl = document.getElementById('agent-route-label');
+    if (routeLabelEl) {
+        routeLabelEl.textContent = isHungarian ? 'Feldolgozási folyamat' : 'Processing Pipeline';
+    }
+
+    document.getElementById('dispatched-agent-title').textContent = dispatched_agent || (isHungarian ? '📄 Standard adatkinyerés' : '📄 Standard Document Extraction');
     const classBadge = document.getElementById('classification-badge');
     if (classification) {
         const confPercent = Math.round((classification.confidence || 0) * 100);
-        classBadge.textContent = `${classification.doc_type.toUpperCase()} (${confPercent}%)`;
-        document.getElementById('router-rationale').textContent = `Reasoning: ${classification.rationale}`;
+        const typeLabel = classification.doc_type === 'general' ? (isHungarian ? 'STANDARD / ÁLTALÁNOS' : 'STANDARD / GENERAL') : classification.doc_type.toUpperCase();
+        classBadge.textContent = `${typeLabel} (${confPercent}%)`;
+        const rationalePrefix = isHungarian ? 'Indoklás' : 'Reasoning';
+        document.getElementById('router-rationale').textContent = `${rationalePrefix}: ${classification.rationale}`;
     } else {
         classBadge.textContent = 'STANDARD';
         document.getElementById('router-rationale').textContent = '';
@@ -142,15 +169,23 @@ function renderResults(data, lang) {
     if (business) {
         businessCard.style.display = 'block';
         document.getElementById('biz-feasibility').textContent = `${business.feasibility_score} / 10`;
-        document.getElementById('biz-budget').textContent = business.project_budget || 'Not specified';
-        document.getElementById('biz-roi').textContent = business.roi_forecast || 'Not specified';
+        const notSpecifiedText = isHungarian ? 'Nincs megadva' : 'Not specified';
+        document.getElementById('biz-budget').textContent = business.project_budget || notSpecifiedText;
+        document.getElementById('biz-roi').textContent = business.roi_forecast || notSpecifiedText;
         document.getElementById('biz-recommendation').textContent = business.recommendation || '—';
 
         const riskTbody = document.getElementById('biz-risk-tbody');
         riskTbody.innerHTML = '';
         (business.risk_assessment || []).forEach(risk => {
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td><strong>${risk.key}</strong></td><td>${risk.value}</td>`;
+            const tdKey = document.createElement('td');
+            const strong = document.createElement('strong');
+            strong.textContent = risk.key;
+            tdKey.appendChild(strong);
+            const tdVal = document.createElement('td');
+            tdVal.textContent = risk.value;
+            tr.appendChild(tdKey);
+            tr.appendChild(tdVal);
             riskTbody.appendChild(tr);
         });
     } else {
@@ -189,7 +224,12 @@ function renderResults(data, lang) {
         tbody.innerHTML = '';
         (extracted.important_numbers || []).forEach(item => {
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${item.key}</td><td>${item.value}</td>`;
+            const tdKey = document.createElement('td');
+            tdKey.textContent = item.key;
+            const tdVal = document.createElement('td');
+            tdVal.textContent = item.value;
+            tr.appendChild(tdKey);
+            tr.appendChild(tdVal);
             tbody.appendChild(tr);
         });
     }

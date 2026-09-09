@@ -1,6 +1,7 @@
 import logging
 from typing import Optional, TypedDict
 from pydantic import BaseModel
+# pyrefly: ignore [missing-import]
 from langgraph.graph import StateGraph, END
 from langchain_google_genai import ChatGoogleGenerativeAI
 from app.core.config import settings
@@ -15,6 +16,8 @@ from app.schemas.extraction import (
 )
 
 logger = logging.getLogger(__name__)
+
+MAX_DOCUMENT_CHARS = 15000
 
 
 class AgentState(TypedDict, total=False):
@@ -37,18 +40,17 @@ class ClassifierOutput(BaseModel):
 class ResearchAgentOutput(BaseModel):
     research_analysis: ResearchAnalysis
     extracted_data: ExtractedData
+    translation_pipeline: TranslationPipeline
 
 
 class BusinessAgentOutput(BaseModel):
     business_analysis: BusinessAnalysis
     extracted_data: ExtractedData
+    translation_pipeline: TranslationPipeline
 
 
-class GeneralAgentOutput(BaseModel):
+class StandardExtractorOutput(BaseModel):
     extracted_data: ExtractedData
-
-
-class SynthesisOutput(BaseModel):
     translation_pipeline: TranslationPipeline
 
 
@@ -68,8 +70,7 @@ class DocumentAgentWorkflow:
         workflow.add_node("router", self._router_node)
         workflow.add_node("research_specialist", self._research_specialist_node)
         workflow.add_node("business_specialist", self._business_specialist_node)
-        workflow.add_node("general_specialist", self._general_specialist_node)
-        workflow.add_node("synthesis", self._synthesis_node)
+        workflow.add_node("standard_extractor", self._standard_extractor_node)
 
         workflow.set_entry_point("router")
 
@@ -79,27 +80,29 @@ class DocumentAgentWorkflow:
             {
                 "research": "research_specialist",
                 "business_proposal": "business_specialist",
-                "general": "general_specialist"
+                "general": "standard_extractor"
             }
         )
 
-        workflow.add_edge("research_specialist", "synthesis")
-        workflow.add_edge("business_specialist", "synthesis")
-        workflow.add_edge("general_specialist", "synthesis")
-        workflow.add_edge("synthesis", END)
+        workflow.add_edge("research_specialist", END)
+        workflow.add_edge("business_specialist", END)
+        workflow.add_edge("standard_extractor", END)
 
         return workflow.compile()
 
     async def _router_node(self, state: AgentState) -> dict:
-        logger.info("Step 1: Router Agent analyzing document type and metadata...")
-        text_sample = state["document_text"][:4000]
+        target_lang = state.get("target_language", "Hungarian")
+        logger.info("Step 1: Router analyzing document type in %s context...", target_lang)
+        text_sample = state["document_text"][:2500]
 
         prompt = (
-            "You are an expert Document Classification and Routing Agent in an Enterprise AI Pipeline. "
+            "You are an expert Document Classification and Routing Agent in an Enterprise Document Pipeline. "
             "Analyze the following document excerpt and classify it strictly into one of three categories:\n"
             "1. 'research' -> Scientific articles, academic papers, technological breakthroughs, patents, or lab reports.\n"
             "2. 'business_proposal' -> Commercial proposals, grant applications, investment pitch decks, project budgets, or business plans.\n"
             "3. 'general' -> Invoices, simple receipts, general contracts, resumes, or generic corporate memos.\n\n"
+            f"TARGET LANGUAGE REQUIREMENT:\n"
+            f"Write the classification 'rationale' and 'document_type' strictly in {target_lang}.\n"
             "Also infer the document title, primary language, and high-level document type.\n\n"
             f"Document Sample:\n{text_sample}"
         )
@@ -117,7 +120,10 @@ class DocumentAgentWorkflow:
         }
 
     def _route_document(self, state: AgentState) -> str:
-        doc_type = state.get("classification", {}).doc_type
+        classification = state.get("classification")
+        if classification is None:
+            return "general"
+        doc_type = classification.doc_type
         if doc_type == "research":
             return "research"
         elif doc_type == "business_proposal":
@@ -125,16 +131,28 @@ class DocumentAgentWorkflow:
         return "general"
 
     async def _research_specialist_node(self, state: AgentState) -> dict:
-        logger.info("Step 2: Research & Innovation Specialist evaluating TRL and Tech-Transfer potential...")
+        target_lang = state.get("target_language", "Hungarian")
+        logger.info("Step 2: Research Specialist evaluating TRL and synthesizing summary (target_lang: %s)...", target_lang)
         prompt = (
-            "You are a Senior Technology Transfer Specialist and Academic Research Evaluator. "
-            "Evaluate this scientific/technological document for commercial readiness.\n"
+            "You are a Senior Technology Transfer Specialist and Academic Research Evaluator in an Enterprise Pipeline. "
+            "Evaluate this scientific/technological document for commercial readiness and provide an executive synthesis.\n"
             "1. Assess the Technology Readiness Level (TRL on a scale of 1 to 9) with concrete evidence from the text.\n"
             "2. Identify the core scientific novelty or breakthrough.\n"
             "3. Suggest 2-4 concrete commercial/industrial use cases.\n"
             "4. Highlight critical development gaps or missing experimental validations before market entry.\n"
-            "5. Extract key research institutions/authors and important numerical metrics (e.g. accuracy %, efficiency, sample size).\n\n"
-            f"Document Text:\n{state['document_text']}"
+            "5. Extract key research institutions/authors and important numerical metrics (e.g. accuracy %, efficiency, sample size).\n"
+            "6. In 'translation_pipeline', provide a comprehensive executive summary of the document and concrete action items.\n\n"
+            f"CRITICAL TARGET LANGUAGE REQUIREMENT:\n"
+            f"The user's chosen target language is '{target_lang}'.\n"
+            f"ALL qualitative text MUST be written STRICTLY in {target_lang}:\n"
+            f"- 'trl_justification' MUST be in {target_lang}.\n"
+            f"- 'scientific_novelty' MUST be in {target_lang}.\n"
+            f"- All entries in 'commercial_use_cases' MUST be in {target_lang}.\n"
+            f"- All entries in 'development_gaps' MUST be in {target_lang}.\n"
+            f"- 'important_numbers' metric keys MUST be in {target_lang}.\n"
+            f"- 'translation_pipeline' (both 'summary' and 'action_items') MUST be written STRICTLY in {target_lang}.\n"
+            f"Do NOT answer in English when {target_lang} is requested!\n\n"
+            f"Document Text:\n{state['document_text'][:MAX_DOCUMENT_CHARS]}"
         )
 
         structured_agent = self.llm.with_structured_output(ResearchAgentOutput)
@@ -143,21 +161,33 @@ class DocumentAgentWorkflow:
         return {
             "research_analysis": result.research_analysis,
             "extracted_data": result.extracted_data,
+            "translation_pipeline": result.translation_pipeline,
             "dispatched_agent": "🔬 Research & Innovation Specialist (TRL & Tech-Transfer)"
         }
 
     async def _business_specialist_node(self, state: AgentState) -> dict:
-        logger.info("Step 2: Business Proposal Specialist evaluating feasibility and risk matrix...")
+        target_lang = state.get("target_language", "Hungarian")
+        logger.info("Step 2: Business Proposal Specialist evaluating feasibility and synthesizing summary (target_lang: %s)...", target_lang)
         prompt = (
-            "You are a Venture Capital Analyst and Enterprise Project Evaluator. "
-            "Evaluate this business proposal or project plan for feasibility and risk.\n"
+            "You are a Venture Capital Analyst and Enterprise Project Evaluator in an Enterprise Pipeline. "
+            "Evaluate this business proposal or project plan for feasibility and risk, and provide an executive synthesis.\n"
             "1. Extract project budget, funding requested, or revenue figures.\n"
             "2. Extract expected ROI or commercial milestones.\n"
             "3. Assign an objective Feasibility Score (1-10) considering budget and timeline realism.\n"
             "4. Perform a risk assessment across financial, execution, and market risks.\n"
             "5. Provide an executive recommendation (e.g. approve, revise, reject).\n"
-            "6. Extract key companies/stakeholders and important monetary/timeline numbers.\n\n"
-            f"Document Text:\n{state['document_text']}"
+            "6. Extract key companies/stakeholders and important monetary/timeline numbers.\n"
+            "7. In 'translation_pipeline', provide a comprehensive executive summary of the document and concrete action items.\n\n"
+            f"CRITICAL TARGET LANGUAGE REQUIREMENT:\n"
+            f"The user's chosen target language is '{target_lang}'.\n"
+            f"ALL qualitative text MUST be written STRICTLY in {target_lang}:\n"
+            f"- 'roi_forecast' MUST be in {target_lang}.\n"
+            f"- 'recommendation' MUST be in {target_lang}.\n"
+            f"- In 'risk_assessment', both the risk category 'key' and description 'value' MUST be in {target_lang}.\n"
+            f"- 'important_numbers' metric names ('key') MUST be in {target_lang}.\n"
+            f"- 'translation_pipeline' (both 'summary' and 'action_items') MUST be written STRICTLY in {target_lang}.\n"
+            f"Do NOT answer in English when {target_lang} is requested!\n\n"
+            f"Document Text:\n{state['document_text'][:MAX_DOCUMENT_CHARS]}"
         )
 
         structured_agent = self.llm.with_structured_output(BusinessAgentOutput)
@@ -166,53 +196,33 @@ class DocumentAgentWorkflow:
         return {
             "business_analysis": result.business_analysis,
             "extracted_data": result.extracted_data,
+            "translation_pipeline": result.translation_pipeline,
             "dispatched_agent": "💼 Business Proposal & Commercial Feasibility Specialist"
         }
 
-    async def _general_specialist_node(self, state: AgentState) -> dict:
-        logger.info("Step 2: General Specialist extracting entities and numerical data...")
+    async def _standard_extractor_node(self, state: AgentState) -> dict:
+        target_lang = state.get("target_language", "Hungarian")
+        logger.info("Step 2: Standard Extractor extracting data and synthesizing summary in %s...", target_lang)
         prompt = (
-            "You are an Enterprise Data Extraction Specialist. "
-            "Extract key entities (companies, persons, tools) and all important numbers/dates/metrics in key-value pairs.\n\n"
-            f"Document Text:\n{state['document_text']}"
+            "You are a Standard Enterprise Data Extraction Pipeline. "
+            "This document is a standard corporate file (e.g. invoice, receipt, general memo) that does NOT require an autonomous domain specialist agent. "
+            "Perform standard baseline entity and numerical metric extraction, and provide an executive summary.\n"
+            "1. Extract key entities (companies, persons, tools) and all important numbers/dates/metrics in key-value pairs.\n"
+            "2. In 'translation_pipeline', provide a concise executive summary of the document and actionable takeaways if any.\n\n"
+            f"CRITICAL TARGET LANGUAGE REQUIREMENT:\n"
+            f"The target language is '{target_lang}'.\n"
+            f"All labels/keys in 'important_numbers' MUST be written in {target_lang} (e.g. 'Összesen fizetendő', 'Számla kelte').\n"
+            f"'translation_pipeline' (both 'summary' and 'action_items') MUST be written STRICTLY in {target_lang}.\n\n"
+            f"Document Text:\n{state['document_text'][:MAX_DOCUMENT_CHARS]}"
         )
 
-        structured_agent = self.llm.with_structured_output(GeneralAgentOutput)
-        result: GeneralAgentOutput = await structured_agent.ainvoke(prompt)
+        structured_agent = self.llm.with_structured_output(StandardExtractorOutput)
+        result: StandardExtractorOutput = await structured_agent.ainvoke(prompt)
 
         return {
             "extracted_data": result.extracted_data,
-            "dispatched_agent": "📄 General Enterprise Document Specialist"
-        }
-
-    async def _synthesis_node(self, state: AgentState) -> dict:
-        target_lang = state.get("target_language", "Hungarian")
-        agent_name = state.get("dispatched_agent", "Specialist")
-        logger.info("Step 3: Synthesis Node formulating executive summary in %s...", target_lang)
-
-        context_details = []
-        if state.get("research_analysis"):
-            ra = state["research_analysis"]
-            context_details.append(f"TRL Level: {ra.trl_level} - {ra.trl_justification}")
-            context_details.append(f"Novelty: {ra.scientific_novelty}")
-        elif state.get("business_analysis"):
-            ba = state["business_analysis"]
-            context_details.append(f"Budget: {ba.project_budget}, Feasibility Score: {ba.feasibility_score}/10")
-            context_details.append(f"Recommendation: {ba.recommendation}")
-
-        prompt = (
-            f"You are the Lead Executive Communicator in an AI Workflow. "
-            f"Synthesize the findings from {agent_name} into an executive brief. "
-            f"Crucially, the 'summary' and 'action_items' MUST be written STRICTLY in {target_lang}.\n\n"
-            f"Specialist findings:\n" + "\n".join(context_details) + "\n\n"
-            f"Full Document context:\n{state['document_text'][:3000]}"
-        )
-
-        structured_synthesis = self.llm.with_structured_output(SynthesisOutput)
-        result: SynthesisOutput = await structured_synthesis.ainvoke(prompt)
-
-        return {
-            "translation_pipeline": result.translation_pipeline
+            "translation_pipeline": result.translation_pipeline,
+            "dispatched_agent": "📄 Standard Extractor (No Specialist Agent)"
         }
 
     async def process_document(self, text: str, target_language: str) -> ExtractionResponse:
@@ -224,7 +234,7 @@ class DocumentAgentWorkflow:
         final_state = await self.graph.ainvoke(initial_state)
 
         return ExtractionResponse(
-            dispatched_agent=final_state.get("dispatched_agent", "General Document Specialist"),
+            dispatched_agent=final_state.get("dispatched_agent", "📄 Standard Extractor (No Specialist Agent)"),
             classification=final_state["classification"],
             document_metadata=final_state["document_metadata"],
             research_analysis=final_state.get("research_analysis"),

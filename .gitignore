@@ -1,17 +1,38 @@
 # Byte-compiled / optimized files
 __pycache__/
 *.py[cod]
+*.pyo
 
-# Virtual environments
+# Virtual environments (anywhere in the project)
 .venv/
 venv/
 env/
+**/venv/
+**/.venv/
 
 # Environment variables
 .env
+.env.*
+!.env.example
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
 
 # Local test docs and scratch scripts
 sample_docs/
 create_sample_pdfs.py
 test_live_extraction.py
 
+# pytest cache
+.pytest_cache/
+
+# mypy cache
+.mypy_cache/

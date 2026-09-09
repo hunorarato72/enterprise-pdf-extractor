@@ -4,18 +4,18 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Enterprise Multi-Agent Document Intelligence</title>
+    <title>Enterprise Document Intelligence & Extraction</title>
     <meta name="description"
-        content="LangGraph-powered Multi-Agent document extraction: Router, TRL Research Specialist, and Business Proposal Evaluator." />
+        content="Automated Enterprise Document Intelligence: Classifier, TRL Research Specialist, and Commercial Feasibility Evaluator." />
     <link rel="stylesheet" href="/static/style.css" />
 </head>
 
 <body>
 
     <header>
-        <div class="agent-badge-top">LANGGRAPH MULTI-AGENT PIPELINE</div>
-        <h1>PDF Data Extractor &bull; Multi-Agent Intelligence</h1>
-        <p>Dynamic routing: Autonomous agents specialized in Tech-Transfer, TRL evaluation, and Commercial feasibility.
+        <div class="agent-badge-top">INTELLIGENT DOCUMENT PIPELINE</div>
+        <h1>Enterprise Document Intelligence</h1>
+        <p>Automated classification, domain-specific deep extraction (TRL / Feasibility), and multilingual executive synthesis.
         </p>
     </header>
 
@@ -44,7 +44,7 @@
                 <option value="Italian">🇮🇹 Italian</option>
             </select>
 
-            <button id="extract-btn" disabled>Dispatch Agents</button>
+            <button id="extract-btn" disabled>Dokumentum elemzése</button>
         </div>
 
         <p id="status"></p>
@@ -54,7 +54,7 @@
             <div class="card agent-status-card">
                 <div class="agent-status-header">
                     <div>
-                        <div class="section-label" style="margin-bottom: 2px;">Active Agent</div>
+                        <div class="section-label" id="agent-route-label" style="margin-bottom: 2px;">Feldolgozási folyamat</div>
                         <div class="dispatched-agent-title" id="dispatched-agent-title">—</div>
                     </div>
                     <div class="confidence-badge" id="classification-badge">—</div>
@@ -154,14 +154,14 @@
 
             <div class="card json-card">
                 <div class="json-card-header">
-                    <div class="section-label" style="margin-bottom:0">Multi-Agent Structured Output (JSON)</div>
-                    <button id="download-btn" title="Download as .json file">
+                    <div class="section-label" style="margin-bottom:0">Strukturált Adatkimenet (JSON)</div>
+                    <button id="download-btn" title="Letöltés .json fájlként">
                         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24"
                             stroke-width="2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
                         </svg>
-                        Download JSON
+                        JSON letöltése
                     </button>
                 </div>
                 <pre id="json-output"></pre>

@@ -30,7 +30,7 @@ def test_extract_file_too_large(client):
 # TEST 3: Mock successful data extraction and translation (General Specialist)
 def test_extract_success(client, monkeypatch):
     expected_response = ExtractionResponse(
-        dispatched_agent="📄 General Enterprise Document Specialist",
+        dispatched_agent="📄 Standard Extractor (No Specialist Agent)",
         classification=ClassificationResult(
             doc_type="general",
             confidence=0.98,
@@ -63,7 +63,7 @@ def test_extract_success(client, monkeypatch):
     
     assert response.status_code == 200
     data = response.json()
-    assert data["dispatched_agent"] == "📄 General Enterprise Document Specialist"
+    assert data["dispatched_agent"] == "📄 Standard Extractor (No Specialist Agent)"
     assert data["classification"]["doc_type"] == "general"
     assert data["document_metadata"]["title"] == "Test Invoice"
     assert data["translation_pipeline"]["summary"] == "This is a mocked summary in German."
@@ -165,7 +165,7 @@ def test_read_root(client):
     response = client.get("/")
     assert response.status_code == 200
     assert "text/html" in response.headers["content-type"]
-    assert "PDF Data Extractor" in response.text
+    assert "Enterprise Document Intelligence" in response.text
 
 
 # TEST 7: Verify rate limiting

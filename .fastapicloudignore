@@ -1,0 +1,23 @@
+# Ignore virtual environments
+.venv/
+venv/
+
+# Ignore environment files
+.env
+.env.*
+
+# Ignore test files and artifacts
+tests/
+sample_docs/
+create_sample_pdfs.py
+test_live_extraction.py
+.pytest_cache/
+.mypy_cache/
+
+# Ignore Python caches
+__pycache__/
+*.py[cod]
+
+# Ignore IDE files
+.vscode/
+.idea/

@@ -1,15 +1,15 @@
+import os
+
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from slowapi import _rate_limit_exceeded_handler  # pyrefly: ignore[missing-import]
+from slowapi.errors import RateLimitExceeded  # pyrefly: ignore[missing-import]
+
 from app.api.endpoints import router as extract_router
 from app.core.config import settings
-from app.core.security import limiter
-# pyrefly: ignore [missing-import]
-from slowapi import _rate_limit_exceeded_handler
-# pyrefly: ignore [missing-import]
-from slowapi.errors import RateLimitExceeded
 from app.core.logging_config import setup_logging
-import os
+from app.core.security import limiter
 
 setup_logging()
 

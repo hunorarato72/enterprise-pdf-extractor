@@ -8,9 +8,9 @@ from app.core.security import limiter
 
 logger = logging.getLogger(__name__)
 
-router=APIRouter()
+router = APIRouter()
 
-MAX_FILE_SIZE=10*1024*1024
+MAX_FILE_SIZE = 10 * 1024 * 1024
 ALLOWED_MIME_TYPES = ["application/pdf"]
 
 @router.post("/extract", response_model=ExtractionResponse)
@@ -78,6 +78,6 @@ async def extract_data_from_pdf(
     except ValueError as e:
         logger.warning("Validation error during extraction for %s: %s", filename, str(e))
         raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        logger.error("Unexpected error during PDF processing for %s: %s", filename, str(e), exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Error during processing: {str(e)}")
+    except Exception:
+        logger.error("Unexpected error during PDF processing for %s", filename, exc_info=True)
+        raise HTTPException(status_code=500, detail="An internal error occurred during document processing.")
