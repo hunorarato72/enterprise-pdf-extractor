@@ -51,7 +51,7 @@ def test_extract_success(client, monkeypatch):
         )
     )
 
-    async def mock_extract(text: str, target_language: str):
+    async def mock_extract(text: str, target_language: str, **kwargs):
         assert target_language == "German"
         return expected_response
 
@@ -100,7 +100,7 @@ def test_extract_research_specialist(client, monkeypatch):
         )
     )
 
-    async def mock_extract(text: str, target_language: str):
+    async def mock_extract(text: str, target_language: str, **kwargs):
         return expected_response
 
     monkeypatch.setattr("app.api.endpoints.extract_text", lambda bytes_data: "Perovskite research text")
@@ -144,7 +144,7 @@ def test_extract_business_proposal(client, monkeypatch):
         translation_pipeline=TranslationPipeline(summary="Üzleti terv.", action_items=["Támogatás jóváhagyása"])
     )
 
-    async def mock_extract(text: str, target_language: str):
+    async def mock_extract(text: str, target_language: str, **kwargs):
         return expected_response
 
     monkeypatch.setattr("app.api.endpoints.extract_text", lambda bytes_data: "Grant proposal text")

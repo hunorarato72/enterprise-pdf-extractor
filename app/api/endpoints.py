@@ -65,8 +65,8 @@ async def extract_data_from_pdf(
             logger.info("Extracting text from PDF...")
             text = await asyncio.to_thread(extract_text, bytes(file_bytes))
             
-            logger.info("Extracting structured metadata and translation using AI (language: %s)...", target_language)
-            response = await ai_extractor.extract(text, target_language=target_language)
+            logger.info("Extracting structured metadata and translation using AI (file: %s, language: %s)...", filename, target_language)
+            response = await ai_extractor.extract(text, target_language=target_language, filename=filename)
             
             logger.info("Extraction complete for file: %s", filename)
             return response

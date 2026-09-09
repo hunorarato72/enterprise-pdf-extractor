@@ -23,6 +23,7 @@ MAX_DOCUMENT_CHARS = 15000
 class AgentState(TypedDict, total=False):
     document_text: str
     target_language: str
+    filename: Optional[str]
     classification: ClassificationResult
     document_metadata: DocumentMetadata
     research_analysis: Optional[ResearchAnalysis]
@@ -92,18 +93,24 @@ class DocumentAgentWorkflow:
 
     async def _router_node(self, state: AgentState) -> dict:
         target_lang = state.get("target_language", "Hungarian")
-        logger.info("Step 1: Router analyzing document type in %s context...", target_lang)
+        filename = state.get("filename")
+        filename_hint = f"Document Filename: {filename}\n" if filename else ""
+        logger.info("Step 1: Router analyzing document type in %s context (filename: %s)...", target_lang, filename)
         text_sample = state["document_text"][:2500]
 
         prompt = (
             "You are an expert Document Classification and Routing Agent in an Enterprise Document Pipeline. "
-            "Analyze the following document excerpt and classify it strictly into one of three categories:\n"
-            "1. 'research' -> Scientific articles, academic papers, technological breakthroughs, patents, or lab reports.\n"
-            "2. 'business_proposal' -> Commercial proposals, grant applications, investment pitch decks, project budgets, or business plans.\n"
-            "3. 'general' -> Invoices, simple receipts, general contracts, resumes, or generic corporate memos.\n\n"
+            "Analyze the following document and classify it strictly into one of three categories:\n\n"
+            "1. 'research' -> Strictly for scientific journal articles, peer-reviewed academic papers, technological breakthrough publications, lab experiment reports, or patents.\n"
+            "2. 'business_proposal' -> Strictly for commercial business plans, enterprise pitch decks, venture capital fundraising proposals, for-profit commercial investment plans, or corporate sales proposals with financial ROI and market feasibility projections.\n"
+            "   CRITICAL EXCLUSIONS FOR 'business_proposal':\n"
+            "   - Academic, educational, or sports scholarships (pl. sportösztöndíj, tanulmányi ösztöndíj, sporttámogatási pályázat, diákpályázat, egyetemi/egyesületi kiírások) are NOT commercial business proposals! They must strictly be classified as 'general'.\n"
+            "   - Institutional grant calls for students/athletes, fellowship notices, non-profit or municipal grants, and administrative application forms must be classified as 'general'.\n"
+            "3. 'general' -> All other documents: scholarships and fellowship notices (sportösztöndíj, tanulmányi pályázatok, diák- és sporttámogatások), university regulations, application forms, invoices, receipts, purchase orders, standard legal contracts, employment agreements, HR policies, resumes, or generic corporate memos.\n\n"
             f"TARGET LANGUAGE REQUIREMENT:\n"
             f"Write the classification 'rationale' and 'document_type' strictly in {target_lang}.\n"
             "Also infer the document title, primary language, and high-level document type.\n\n"
+            f"{filename_hint}"
             f"Document Sample:\n{text_sample}"
         )
 
@@ -225,10 +232,11 @@ class DocumentAgentWorkflow:
             "dispatched_agent": "📄 Standard Extractor (No Specialist Agent)"
         }
 
-    async def process_document(self, text: str, target_language: str) -> ExtractionResponse:
+    async def process_document(self, text: str, target_language: str, filename: Optional[str] = None) -> ExtractionResponse:
         initial_state: AgentState = {
             "document_text": text,
-            "target_language": target_language
+            "target_language": target_language,
+            "filename": filename
         }
 
         final_state = await self.graph.ainvoke(initial_state)
