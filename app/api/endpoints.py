@@ -78,6 +78,15 @@ async def extract_data_from_pdf(
     except ValueError as e:
         logger.warning("Validation error during extraction for %s: %s", filename, str(e))
         raise HTTPException(status_code=400, detail=str(e))
-    except Exception:
-        logger.error("Unexpected error during PDF processing for %s", filename, exc_info=True)
-        raise HTTPException(status_code=500, detail="An internal error occurred during document processing.")
+    except Exception as e:
+        err_msg = str(e)
+        logger.error("Unexpected error during PDF processing for %s: %s", filename, err_msg, exc_info=True)
+        if "429" in err_msg or "RESOURCE_EXHAUSTED" in err_msg or "quota" in err_msg.lower():
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Az AI szolgáltatás elérte a pillanatnyi kéréshatárt (Rate Limit / Quota). Kérjük, várj fél percet és próbáld újra!"
+            )
+        raise HTTPException(
+            status_code=500,
+            detail=f"Hiba történt a dokumentum feldolgozása közben: {err_msg[:120]}"
+        )

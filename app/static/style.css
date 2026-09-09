@@ -583,3 +583,72 @@ footer a:hover {
         align-items: flex-start;
     }
 }
+
+/* Routing Architecture Guide */
+.routing-guide-card {
+    background: rgba(19, 19, 30, 0.7);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-top: 4px;
+    font-size: 0.83rem;
+}
+
+.guide-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #a5b4fc;
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin-bottom: 12px;
+}
+
+.guide-title svg {
+    stroke: #a5b4fc;
+}
+
+.guide-items {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.guide-item {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    color: #cbd5e1;
+    line-height: 1.45;
+}
+
+.guide-badge {
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.guide-badge.agent {
+    background: rgba(124, 111, 254, 0.2);
+    color: #c4b5fd;
+    border: 1px solid rgba(124, 111, 254, 0.4);
+}
+
+.guide-badge.baseline {
+    background: rgba(148, 163, 184, 0.12);
+    color: #94a3b8;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.guide-desc {
+    flex: 1;
+}
+
+.guide-desc strong {
+    color: #f1f5f9;
+}
