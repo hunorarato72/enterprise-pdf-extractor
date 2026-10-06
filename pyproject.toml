@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "enterprise-pdf-extractor"
+version = "0.1.0"
+description = "Enterprise PDF Data Extractor (FastAPI + Gemini)"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi[standard]>=0.111.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "pypdf>=4.2.0",
+    "langchain-google-genai>=2.0.0",
+    "python-multipart>=0.0.9",
+    "slowapi>=0.1.9",
+    "httpx>=0.28.1",
+]
+
+[tool.fastapi]
+entrypoint = "app.main:app"
