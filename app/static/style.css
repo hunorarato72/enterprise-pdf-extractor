@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 *,
 *::before,
@@ -9,21 +9,24 @@
 }
 
 :root {
-    --bg: #0d0d14;
-    --surface: #13131e;
-    --card: #1a1a28;
-    --border: #2a2a40;
-    --accent: #7c6ffe;
-    --accent-dim: rgba(124, 111, 254, 0.15);
-    --text: #e2e2ec;
-    --text-muted: #6b6b88;
-    --success: #4ade80;
+    --bg: #121214;
+    --surface: #18181c;
+    --card: #1f1f23;
+    --border: #2e2e34;
+    --border-hover: #4a4a56;
+    --accent: #f4f4f6;
+    --accent-contrast: #121214;
+    --accent-dim: rgba(255, 255, 255, 0.05);
+    --text: #f4f4f6;
+    --text-secondary: #d1d1db;
+    --text-muted: #8b8b99;
+    --success: #34d399;
     --error: #f87171;
     --radius: 12px;
 }
 
 body {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
@@ -35,19 +38,19 @@ body {
 
 header {
     text-align: center;
-    margin-bottom: 48px;
+    margin-bottom: 40px;
 }
 
 header h1 {
-    font-size: 1.75rem;
+    font-size: 1.85rem;
     font-weight: 600;
-    letter-spacing: -0.02em;
-    color: #fff;
+    letter-spacing: -0.025em;
+    color: #ffffff;
 }
 
 header p {
     margin-top: 8px;
-    font-size: 0.9rem;
+    font-size: 0.92rem;
     color: var(--text-muted);
 }
 
@@ -64,6 +67,7 @@ header p {
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 #drop-zone {
@@ -83,26 +87,29 @@ header p {
 }
 
 #drop-zone svg {
-    width: 36px;
-    height: 36px;
+    width: 38px;
+    height: 38px;
     stroke: var(--text-muted);
     margin-bottom: 12px;
-    transition: stroke 0.2s;
+    transition: stroke 0.2s, transform 0.2s;
 }
 
 #drop-zone:hover svg,
 #drop-zone.drag-over svg {
     stroke: var(--accent);
+    transform: translateY(-2px);
 }
 
 #drop-zone p {
-    font-size: 0.9rem;
+    font-size: 0.92rem;
     color: var(--text-muted);
 }
 
 #drop-zone span.highlight {
     color: var(--accent);
     font-weight: 500;
+    text-decoration: underline;
+    text-underline-offset: 3px;
 }
 
 #file-name {
@@ -134,38 +141,40 @@ select {
     padding: 12px 14px;
     cursor: pointer;
     outline: none;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, background-color 0.2s;
     appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b6b88' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238b8b99' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 14px center;
     padding-right: 36px;
 }
 
 select:focus {
-    border-color: var(--accent);
+    border-color: var(--border-hover);
 }
 
 select option {
     background: var(--card);
+    color: var(--text);
 }
 
 button#extract-btn {
     flex: 1;
     padding: 12px 24px;
     background: var(--accent);
-    color: #fff;
+    color: var(--accent-contrast);
     font-family: inherit;
     font-size: 0.9rem;
-    font-weight: 500;
+    font-weight: 600;
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    transition: opacity 0.2s, transform 0.1s;
+    transition: background 0.2s, opacity 0.2s, transform 0.1s;
 }
 
 button#extract-btn:hover:not(:disabled) {
-    opacity: 0.88;
+    background: #ffffff;
+    opacity: 0.95;
 }
 
 button#extract-btn:active:not(:disabled) {
@@ -173,7 +182,7 @@ button#extract-btn:active:not(:disabled) {
 }
 
 button#extract-btn:disabled {
-    opacity: 0.4;
+    opacity: 0.35;
     cursor: not-allowed;
 }
 
@@ -214,15 +223,14 @@ button#extract-btn:disabled {
 
 #results.visible {
     display: flex;
-    animation: fadeIn 0.4s ease;
+    animation: fadeIn 0.35s ease;
 }
 
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(8px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);
@@ -230,9 +238,9 @@ button#extract-btn:disabled {
 }
 
 .section-label {
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     font-weight: 600;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--text-muted);
     margin-bottom: 14px;
@@ -266,9 +274,9 @@ button#extract-btn:disabled {
 }
 
 #summary-text {
-    font-size: 0.9rem;
+    font-size: 0.92rem;
     line-height: 1.7;
-    color: var(--text);
+    color: var(--text-secondary);
 }
 
 #action-list {
@@ -282,9 +290,9 @@ button#extract-btn:disabled {
     display: flex;
     align-items: flex-start;
     gap: 10px;
-    font-size: 0.875rem;
+    font-size: 0.88rem;
     line-height: 1.5;
-    color: var(--text);
+    color: var(--text-secondary);
 }
 
 #action-list li::before {
@@ -304,9 +312,9 @@ button#extract-btn:disabled {
 }
 
 .tag {
-    background: var(--accent-dim);
-    border: 1px solid rgba(124, 111, 254, 0.3);
-    color: #a89fff;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
     font-size: 0.8rem;
     font-weight: 500;
     padding: 4px 12px;
@@ -340,26 +348,28 @@ button#extract-btn:disabled {
 #numbers-table td:last-child {
     font-weight: 500;
     text-align: right;
+    color: var(--text);
 }
 
 footer {
-    margin-top: 64px;
-    font-size: 0.78rem;
+    margin-top: 56px;
+    font-size: 0.8rem;
     color: var(--text-muted);
     text-align: center;
 }
 
 footer a {
-    color: var(--accent);
-    text-decoration: none;
+    color: var(--text);
+    text-decoration: underline;
+    text-underline-offset: 2px;
 }
 
 footer a:hover {
-    text-decoration: underline;
+    color: #ffffff;
 }
 
 .json-card {
-    border-color: rgba(124, 111, 254, 0.25);
+    border-color: var(--border);
 }
 
 .json-card-header {
@@ -374,20 +384,21 @@ footer a:hover {
     align-items: center;
     gap: 7px;
     padding: 8px 16px;
-    background: transparent;
-    border: 1.5px solid var(--accent);
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 8px;
-    color: var(--accent);
+    color: var(--text);
     font-family: inherit;
     font-size: 0.82rem;
     font-weight: 500;
     cursor: pointer;
-    transition: background 0.2s, color 0.2s;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
 }
 
 #download-btn:hover {
-    background: var(--accent);
-    color: #fff;
+    background: #2a2a30;
+    border-color: var(--border-hover);
+    color: #ffffff;
 }
 
 #download-btn svg {
@@ -395,14 +406,14 @@ footer a:hover {
 }
 
 #json-output {
-    background: var(--bg);
+    background: #141416;
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 16px;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 0.78rem;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 0.8rem;
     line-height: 1.6;
-    color: #a5b4fc;
+    color: var(--text-secondary);
     overflow-x: auto;
     white-space: pre;
     max-height: 360px;

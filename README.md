@@ -1,49 +1,91 @@
 # Enterprise PDF Data Extractor (AI Pipeline)
 
-An asynchronous microservice built with **FastAPI** and **Docker** that extracts structured JSON data from PDF documents using the **Google Gemini 2.5 Flash** LLM, complete with an interactive web UI.
+An asynchronous microservice built with **FastAPI** that extracts structured JSON data from PDF documents using the **Google Gemini 2.5 Flash** LLM, complete with an interactive, minimalist web UI.
 
-## Live Demo
+---
 
-The application is fully dockerized and deployed on the **DigitalOcean App Platform**. You can interact with the live web interface or view the auto-generated documentation via Swagger UI:
-*   **[LIVE WEB UI & DEMO](https://enterprise-data-extractor-j6jzn.ondigitalocean.app/)**
-*   **[LIVE SWAGGER UI DOCS](https://enterprise-data-extractor-j6jzn.ondigitalocean.app/docs)**
+## 🚀 Live Demo
 
-*(Note: The endpoints are secured with an IP-based rate limiter allowing a maximum of 5 requests per minute).*
+The application is deployed live on **FastAPI Cloud**:
 
-## Tech Stack & Architecture
+* **[Live Web Application](https://enterprise-pdf-extractor.fastapicloud.dev)**
+* **[Interactive Swagger API Documentation](https://enterprise-pdf-extractor.fastapicloud.dev/docs)**
+
+> **Note:** The endpoints are protected with an IP-based rate limiter (maximum 5 requests per minute).
+
+---
+
+## 🛠️ Tech Stack & Architecture
 
 - **Backend Framework:** FastAPI (Python 3.11, fully asynchronous execution)
-- **AI Engine:** Google GenAI SDK / LangChain (Gemini 2.5 Flash)
-- **Frontend UI:** Vanilla HTML5, CSS3 (minimalist dark design), Javascript (drag-and-drop upload, Fetch API, and one-click JSON download)
-- **Containerization:** Docker (lightweight python:3.11-slim base image)
-- **Security & Rate Limiting:** slowapi (In-memory rate limiting using the limits engine)
-- **Data Validation:** Pydantic (Strict schema enforcement for LLM outputs)
-- **PDF Processing:** pypdf + io.BytesIO (100% in-memory processing)
+- **AI Engine:** Google Gemini 2.5 Flash (`langchain-google-genai` / Google GenAI SDK)
+- **Schema & Validation:** Pydantic v2 (Guarantees deterministic, type-safe JSON output)
+- **PDF Ingestion:** `pypdf` + `io.BytesIO` (100% in-memory processing in dedicated async worker threads)
+- **Security & Rate Limiting:** `slowapi` (IP-based in-memory rate limiter)
+- **Frontend UI:** Vanilla HTML5, CSS3 (minimalist dark grey & clean typography), JavaScript (Fetch API, drag-and-drop upload, one-click JSON export)
+- **Deployment & Cloud:** **FastAPI Cloud** (`fastapi-cloud-cli`) & Docker containerization
+- **Automated Testing:** `pytest` test suite with mocking for zero-token CI testing
 
-## Key Features
+---
 
-1. **Strict Structured Output:** Enforces strict Pydantic schemas, guaranteeing zero AI hallucinations regarding the JSON structure.
-2. **Interactive Web Interface:** Modern, dark-themed responsive UI with drag-and-drop file upload, real-time loading animations, structured result cards, and one-click JSON file download.
-3. **Dynamic Translation Pipeline:** Automatically generates a comprehensive executive summary and a list of actionable insights translated into a target language of your choice (via the `target_language` API query parameter, defaulting to Hungarian).
-4. **Production-Ready Security:** Embedded IP-based rate limiting protects the service.
-5. **Robust Upload Validation:** Strict 10 MB file size limit and dual MIME-type + file extension verification on every upload.
+## ⚡ Key Features
 
-## API Usage Example
+1. **Strict Structured Output:** Enforces strict Pydantic models with `with_structured_output`, eliminating AI hallucination regarding JSON schema structure.
+2. **Asynchronous Thread Pooling:** CPU-bound PDF parsing is offloaded to worker threads via `asyncio.to_thread`, keeping the event loop responsive.
+3. **Dynamic Translation Pipeline:** Extracts an executive summary and actionable takeaways, translated into the target language of your choice (`target_language` parameter, defaults to Hungarian).
+4. **Minimalist Responsive Web UI:** Clean, dark grey interface with drag-and-drop file upload, real-time status feedback, structured metadata cards, and JSON export.
+5. **Production Hardening:**
+   - Dual-layer file validation (MIME-type check + file extension verification).
+   - 10 MB maximum file size limit.
+   - Built-in rate limiting (`5/minute` per IP).
 
-To extract data from a PDF and translate the summary/action items to German:
+---
+
+## 📡 API Usage Example
+
+To extract data from a PDF document with German executive summary and action items:
 
 ```http
 POST /api/v1/extract?target_language=German HTTP/1.1
+Host: enterprise-pdf-extractor.fastapicloud.dev
 Content-Type: multipart/form-data
 
-file: [your-pdf-file.pdf]
+file: [your-document.pdf]
 ```
 
-## Local Development Setup
+### Sample Response Payload:
+
+```json
+{
+  "document_metadata": {
+    "title": "Quarterly Financial Overview",
+    "detected_language": "English",
+    "document_type": "Financial Report"
+  },
+  "extracted_data": {
+    "key_entities": ["Acme Corp", "Finance Department"],
+    "important_numbers": [
+      { "key": "Gesamtumsatz", "value": "1.250.000 EUR" },
+      { "key": "EBITDA Marge", "value": "18.4%" }
+    ]
+  },
+  "translation_pipeline": {
+    "summary": "Umfassender vierteljährlicher Finanzbericht mit solidem Umsatzwachstum.",
+    "action_items": [
+      "Budgetüberprüfung für das nächste Quartal abschließen",
+      "Kostenoptimierungsstrategie vorlegen"
+    ]
+  }
+}
+```
+
+---
+
+## 💻 Local Development Setup
 
 ### Prerequisites
 - Python 3.11+
-- A Google Gemini AI API Key (from Google AI Studio)
+- Google Gemini API Key (from [Google AI Studio](https://aistudio.google.com/))
 
 ### 1. Clone the Repository
 ```bash
@@ -71,28 +113,53 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-*   **UI:** Navigate to http://127.0.0.1:8000/ to view the web application.
-*   **Docs:** Navigate to http://127.0.0.1:8000/docs to view the Swagger API docs.
+* **Web UI:** http://127.0.0.1:8000/
+* **Interactive Docs:** http://127.0.0.1:8000/docs
 
-### 4. Running the Tests
-To run the automated test suite locally:
+### 4. Running Automated Tests
+Run the unit test suite locally:
 ```bash
-python -m pytest
+python -m pytest tests/ -v
 ```
 
-## Docker Deployment
+---
 
-To build and run the container locally:
+## ☁️ Deployment
+
+### 1. FastAPI Cloud (Recommended)
+This service is natively deployed on **FastAPI Cloud**:
 
 ```bash
-# Build the image
-docker build -t pdf-extractor .
+# Install / Upgrade the FastAPI Cloud CLI
+pip install -U fastapi-cloud-cli
 
-# Run the container
-docker run -p 8000:8000 --env-file .env pdf-extractor
+# Login to your account
+fastapi login
+
+# Deploy the application
+fastapi deploy
 ```
 
-## Future Roadmap
+Set secret environment variables:
+```bash
+fastapi cloud env set --secret GOOGLE_API_KEY "your_api_key_here"
+```
 
-- [x] **Automated Testing Suite:** Implement full unit and integration test coverage using `pytest` and `httpx`, utilizing mock LLM responses.
-- [ ] **Native Multimodal PDF Processing:** Refactor the LLM pipeline to send the raw PDF file directly to Gemini's native document-processing engine (removing dependency on plain text extraction via `pypdf`).
+### 2. Docker Deployment
+To build and run the Docker container locally:
+
+```bash
+# Build Docker image
+docker build -t enterprise-pdf-extractor .
+
+# Run container with environment file
+docker run -p 8000:8000 --env-file .env enterprise-pdf-extractor
+```
+
+---
+
+## 🛣️ Future Roadmap
+
+- [x] **Automated Testing Suite:** 100% test coverage using `pytest` and mock LLM calls.
+- [x] **Cloud Deployment:** Production rollout on FastAPI Cloud.
+- [ ] **Native Multimodal PDF Processing:** Direct PDF byte streaming into Gemini vision API.
